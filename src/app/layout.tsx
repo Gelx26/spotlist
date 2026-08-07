@@ -1,5 +1,22 @@
 import type { Metadata, Viewport } from 'next'
+import { Fraunces, Archivo } from 'next/font/google'
 import './globals.css'
+
+// Old-style serif with a little age to it — the engraved plaque voice.
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-fraunces',
+  display: 'swap',
+})
+
+// Sturdy grotesque for everything operational.
+const archivo = Archivo({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-archivo',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: {
@@ -13,12 +30,12 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#0b3b5c',
+  themeColor: '#14352c',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${fraunces.variable} ${archivo.variable}`}>
       <body>{children}</body>
     </html>
   )

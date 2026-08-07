@@ -7,8 +7,8 @@ import { submitInquiry, type InquiryResult } from '@/lib/actions'
 function SubmitButton() {
   const { pending } = useFormStatus()
   return (
-    <button type="submit" disabled={pending} className="btn w-full disabled:opacity-60">
-      {pending ? 'Sending…' : 'Request availability'}
+    <button type="submit" disabled={pending} className="btn mt-1 w-full py-3 disabled:opacity-60">
+      {pending ? 'Sending…' : 'Send request'}
     </button>
   )
 }
@@ -26,12 +26,12 @@ export function RequestForm({
 
   if (state?.ok) {
     return (
-      <div className="card px-5 py-8 text-center">
-        <div className="mx-auto grid h-11 w-11 place-items-center rounded-full bg-emerald-50 text-xl text-emerald-700">
+      <div className="card px-6 py-10 text-center">
+        <div className="mx-auto grid h-12 w-12 place-items-center rounded-full border border-brass/60 text-lg text-brass-deep">
           ✓
         </div>
-        <p className="mt-3 font-semibold">Request sent</p>
-        <p className="mt-1 text-sm text-muted">
+        <p className="mt-4 font-display text-lg">Request sent</p>
+        <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted">
           {contactName} will get back to you at the email you provided.
         </p>
       </div>
@@ -39,9 +39,9 @@ export function RequestForm({
   }
 
   return (
-    <form action={formAction} className="card space-y-4 px-5 py-5">
+    <form action={formAction} className="card space-y-4 px-6 py-6">
       <div>
-        <h2 className="text-lg font-bold">Request availability</h2>
+        <h2 className="font-display text-lg font-normal">Request availability</h2>
         <p className="mt-1 text-sm text-muted">Goes straight to {contactName}.</p>
       </div>
 
@@ -101,7 +101,7 @@ export function RequestForm({
       </div>
 
       {state?.error && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+        <p className="rounded-sm border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-800">
           {state.error}
         </p>
       )}

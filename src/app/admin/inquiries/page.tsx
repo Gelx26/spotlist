@@ -33,7 +33,7 @@ export default async function InquiriesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Availability requests</h1>
+        <h1 className="font-display text-3xl font-normal">Availability requests</h1>
         <p className="mt-1 text-sm text-muted">Everything submitted from the public QR pages.</p>
       </div>
 
@@ -56,7 +56,7 @@ export default async function InquiriesPage() {
                     {r.phone && ` · ${r.phone}`}
                   </p>
                   <p className="mt-2 text-sm">
-                    <Link href={`/admin/properties/${r.propertyId}`} className="font-medium text-brand hover:underline">
+                    <Link href={`/admin/properties/${r.propertyId}`} className="font-medium text-forest hover:underline">
                       {r.propertyName}
                     </Link>
                     <span className="text-muted">

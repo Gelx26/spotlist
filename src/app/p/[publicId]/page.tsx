@@ -60,17 +60,18 @@ export default async function PublicPropertyPage({
 
   return (
     <div className="min-h-screen">
-      <header className="bg-brand text-white">
-        <div className="mx-auto max-w-2xl px-5 pt-10 pb-8">
-          <p className="text-xs font-semibold uppercase tracking-widest text-white/60">
+      {/* The plaque itself: engraved forest ground, brass rule beneath. */}
+      <header className="rule-brass bg-forest text-ivory">
+        <div className="mx-auto max-w-2xl px-6 pt-12 pb-8">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-ivory/60">
             {property.landlordName}
           </p>
-          <h1 className="mt-2 text-3xl font-bold">{property.name}</h1>
-          {property.address && <p className="mt-1 text-white/70">{property.address}</p>}
-          <p className="mt-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1.5 text-sm font-semibold">
-            <span
-              className={`h-2 w-2 rounded-full ${available.length > 0 ? 'bg-emerald-400' : 'bg-white/40'}`}
-            />
+          <h1 className="mt-3 font-display text-[2rem] leading-[1.12] font-normal">
+            {property.name}
+          </h1>
+          {property.address && <p className="mt-2 text-sm text-ivory/70">{property.address}</p>}
+
+          <p className="mt-7 border-y border-brass/45 py-2.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-brass">
             {available.length > 0
               ? `${available.length} ${unitWord}${available.length === 1 ? '' : 's'} available`
               : 'Currently full'}
@@ -78,24 +79,27 @@ export default async function PublicPropertyPage({
         </div>
       </header>
 
-      <div className="mx-auto max-w-2xl space-y-6 px-5 py-8">
+      <div className="mx-auto max-w-2xl space-y-7 px-6 py-9">
         {property.imageUrl && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={property.imageUrl}
             alt={property.name}
-            className="h-52 w-full rounded-xl object-cover"
+            className="h-56 w-full rounded-sm border border-line object-cover"
           />
         )}
 
-        {property.description && <p className="text-muted">{property.description}</p>}
+        {property.description && (
+          <p className="leading-relaxed text-muted">{property.description}</p>
+        )}
 
-        <section className="space-y-3">
-          <h2 className="text-lg font-bold">Available now</h2>
+        <section className="space-y-4">
+          <h2 className="font-display text-lg font-normal italic">Available now</h2>
+
           {available.length === 0 ? (
-            <div className="card px-5 py-8 text-center">
-              <p className="font-semibold">Nothing available right now</p>
-              <p className="mt-1 text-sm text-muted">
+            <div className="card px-6 py-10 text-center">
+              <p className="font-display text-lg">Nothing available right now</p>
+              <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted">
                 Send a request below and {property.contactName} will let you know when something
                 opens up.
               </p>
@@ -103,26 +107,26 @@ export default async function PublicPropertyPage({
           ) : (
             <ul className="space-y-3">
               {available.map((unit) => (
-                <li key={unit.id} className="card flex items-start gap-4 px-5 py-4">
+                <li key={unit.id} className="card flex items-start gap-5 px-6 py-5">
                   {unit.image_url && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={unit.image_url}
                       alt={unit.title}
-                      className="h-20 w-20 shrink-0 rounded-lg object-cover"
+                      className="h-20 w-20 shrink-0 rounded-sm border border-line object-cover"
                     />
                   )}
                   <div className="min-w-0">
                     <p className="font-semibold">{unit.title}</p>
                     {(unit.price || unit.available_from) && (
-                      <p className="mt-0.5 text-sm font-medium text-brand">
+                      <p className="mt-1 font-display text-base italic text-brass-deep tabular-nums">
                         {[unit.price, unit.available_from && `from ${unit.available_from}`]
                           .filter(Boolean)
                           .join(' · ')}
                       </p>
                     )}
                     {unit.description && (
-                      <p className="mt-1 text-sm text-muted">{unit.description}</p>
+                      <p className="mt-2 text-sm leading-relaxed text-muted">{unit.description}</p>
                     )}
                   </div>
                 </li>
@@ -137,7 +141,9 @@ export default async function PublicPropertyPage({
           contactName={property.contactName}
         />
 
-        <p className="pb-6 text-center text-xs text-muted">Powered by SpotList</p>
+        <p className="pb-8 text-center text-[10px] font-semibold uppercase tracking-[0.16em] text-muted/70">
+          Powered by SpotList
+        </p>
       </div>
     </div>
   )

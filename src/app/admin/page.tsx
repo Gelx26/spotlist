@@ -25,7 +25,7 @@ export default async function AdminHome() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Landlords</h1>
+        <h1 className="font-display text-3xl font-normal">Landlords</h1>
         <p className="mt-1 text-sm text-muted">
           Each landlord has a contact person who receives availability requests.
         </p>
@@ -48,7 +48,7 @@ export default async function AdminHome() {
                 <p className="mt-0.5 text-sm text-muted">
                   {l.contactName} · {l.contactEmail}
                 </p>
-                <p className="mt-3 inline-flex rounded-full bg-brand-soft px-2.5 py-1 text-xs font-semibold text-brand">
+                <p className="mt-3 inline-flex rounded-sm border border-line px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-brass-deep">
                   {Number(l.propertyCount)}{' '}
                   {Number(l.propertyCount) === 1 ? 'property' : 'properties'}
                 </p>

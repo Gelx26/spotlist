@@ -3,7 +3,7 @@ import QRCode from 'qrcode'
 const OPTIONS = {
   errorCorrectionLevel: 'M' as const,
   margin: 1,
-  color: { dark: '#0b3b5c', light: '#ffffff' },
+  color: { dark: '#14352c', light: '#ffffff' },
 }
 
 export function qrSvg(url: string): Promise<string> {

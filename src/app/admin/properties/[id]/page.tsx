@@ -73,8 +73,8 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
           ← {property.landlordName}
         </Link>
         <div className="mt-2 flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-bold">{property.name}</h1>
-          <span className="rounded-full bg-canvas px-2.5 py-1 text-xs font-semibold text-muted">
+          <h1 className="font-display text-3xl font-normal">{property.name}</h1>
+          <span className="rounded-sm border border-line bg-ivory px-2.5 py-1 text-xs font-semibold text-muted">
             {property.kind === 'parking' ? 'Parking' : 'Building'}
           </span>
         </div>
@@ -82,30 +82,35 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
       </div>
 
       {/* ── QR code ─────────────────────────────────────────────────────── */}
-      <section className="card flex flex-col gap-6 px-5 py-5 sm:flex-row sm:items-start">
-        <div
-          className="mx-auto h-40 w-40 shrink-0 [&>svg]:h-full [&>svg]:w-full"
-          dangerouslySetInnerHTML={{ __html: qr }}
-        />
-        <div className="min-w-0 flex-1 space-y-3">
+      <section className="card flex flex-col gap-6 px-6 py-6 sm:flex-row sm:items-start">
+        <div className="mx-auto w-40 shrink-0 border border-line bg-white p-3">
+          <div
+            className="[&>svg]:block [&>svg]:h-full [&>svg]:w-full"
+            dangerouslySetInnerHTML={{ __html: qr }}
+          />
+        </div>
+        <div className="min-w-0 flex-1 space-y-4">
           <div>
-            <h2 className="text-lg font-bold">Public availability page</h2>
-            <p className="mt-1 text-sm text-muted">
-              Print this QR code at the {property.kind === 'parking' ? 'lot' : 'entrance'}. Scanning
+            <h2 className="font-display text-xl font-normal">Public availability page</h2>
+            <p className="mt-1.5 text-sm leading-relaxed text-muted">
+              Post this QR code at the {property.kind === 'parking' ? 'lot' : 'entrance'}. Scanning
               it opens the live list of available {unitWord}s and a request form that reaches{' '}
               {property.contactName}.
             </p>
           </div>
           <CopyLink url={publicUrl} />
           <div className="flex flex-wrap gap-2">
+            <Link href={`/admin/properties/${property.id}/qr-sheet`} className="btn">
+              Printable sheet
+            </Link>
             <a href={publicUrl} target="_blank" rel="noreferrer" className="btn-ghost">
               Open page
             </a>
             <a href={`/api/qr/${property.publicId}`} className="btn-ghost">
-              Download PNG
+              PNG
             </a>
             <a href={`/api/qr/${property.publicId}?format=svg`} className="btn-ghost">
-              Download SVG
+              SVG
             </a>
           </div>
         </div>
@@ -113,7 +118,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
 
       {/* ── Listings ────────────────────────────────────────────────────── */}
       <section className="space-y-3">
-        <h2 className="text-lg font-bold">
+        <h2 className="font-display text-xl font-normal">
           Availability{' '}
           <span className="text-sm font-medium text-muted">
             ({units.filter((u) => u.available).length} of {units.length} available)
@@ -135,7 +140,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                     <img
                       src={unit.image_url}
                       alt={unit.title}
-                      className="h-16 w-16 shrink-0 rounded-lg object-cover"
+                      className="h-16 w-16 shrink-0 rounded-sm border border-line object-cover"
                     />
                   )}
                   <div className="min-w-0 flex-1">
@@ -144,8 +149,8 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                       <span
                         className={
                           unit.available
-                            ? 'rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700'
-                            : 'rounded-full bg-canvas px-2.5 py-0.5 text-xs font-semibold text-muted'
+                            ? 'rounded-sm bg-open-soft px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-open'
+                            : 'rounded-sm border border-line bg-ivory px-2.5 py-0.5 text-xs font-semibold text-muted'
                         }
                       >
                         {unit.available ? 'Available' : 'Taken'}
@@ -308,7 +313,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
 
       {/* ── Requests ────────────────────────────────────────────────────── */}
       <section className="space-y-3">
-        <h2 className="text-lg font-bold">Recent requests</h2>
+        <h2 className="font-display text-xl font-normal">Recent requests</h2>
         {requests.length === 0 ? (
           <EmptyState
             title="No requests yet"
@@ -325,7 +330,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
 
       {/* ── Settings ────────────────────────────────────────────────────── */}
       <section className="space-y-3">
-        <h2 className="text-lg font-bold">Property settings</h2>
+        <h2 className="font-display text-xl font-normal">Property settings</h2>
         <div className="card px-5 py-5">
           <form action={updateProperty} className="grid gap-4 sm:grid-cols-2">
             <input type="hidden" name="id" value={property.id} />

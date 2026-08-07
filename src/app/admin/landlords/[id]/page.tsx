@@ -37,14 +37,14 @@ export default async function LandlordPage({ params }: { params: Promise<{ id: s
         <Link href="/admin" className="text-sm font-medium text-muted hover:text-ink">
           ← All landlords
         </Link>
-        <h1 className="mt-2 text-2xl font-bold">{landlord.name}</h1>
+        <h1 className="mt-2 font-display text-3xl font-normal">{landlord.name}</h1>
         <p className="mt-1 text-sm text-muted">
           Requests go to {landlord.contact_name} ({landlord.contact_email})
         </p>
       </div>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-bold">Buildings &amp; parking</h2>
+        <h2 className="font-display text-xl font-normal">Buildings &amp; parking</h2>
 
         {props.length === 0 ? (
           <EmptyState
@@ -64,11 +64,11 @@ export default async function LandlordPage({ params }: { params: Promise<{ id: s
                       <p className="font-semibold">{p.name}</p>
                       {p.address && <p className="mt-0.5 text-sm text-muted">{p.address}</p>}
                     </div>
-                    <span className="shrink-0 rounded-full bg-canvas px-2.5 py-1 text-xs font-semibold text-muted">
+                    <span className="shrink-0 rounded-sm border border-line bg-ivory px-2.5 py-1 text-xs font-semibold text-muted">
                       {p.kind === 'parking' ? 'Parking' : 'Building'}
                     </span>
                   </div>
-                  <p className="mt-3 text-xs font-semibold text-brand">
+                  <p className="mt-3 text-[11px] font-bold uppercase tracking-wide text-brass-deep">
                     {Number(p.open)} of {Number(p.total)} available
                   </p>
                 </Link>
@@ -129,7 +129,7 @@ export default async function LandlordPage({ params }: { params: Promise<{ id: s
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-bold">Profile &amp; contact</h2>
+        <h2 className="font-display text-xl font-normal">Profile &amp; contact</h2>
         <div className="card px-5 py-5">
           <form action={updateLandlord} className="grid gap-4 sm:grid-cols-2">
             <input type="hidden" name="id" value={landlord.id} />
