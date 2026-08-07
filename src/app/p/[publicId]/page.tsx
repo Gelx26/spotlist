@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { asc, eq } from 'drizzle-orm'
 import { db } from '@/db'
 import { landlords, properties, listings } from '@/db/schema'
+import { dateLine, statusLabel, statusPillClass } from '@/lib/listingStatus'
 import { RequestForm } from './RequestForm'
 
 export const dynamic = 'force-dynamic'
@@ -55,8 +56,18 @@ export default async function PublicPropertyPage({
     .where(eq(listings.property_id, property.id))
     .orderBy(asc(listings.sort_order), asc(listings.created_at))
 
-  const available = units.filter((u) => u.available)
+  const available = units.filter((u) => u.status === 'available')
+  const comingSoon = units.filter((u) => u.status === 'coming_soon')
+  // Everything stays on the board — a full board is still worth asking about.
+  const askable = [...available, ...comingSoon]
   const unitWord = property.kind === 'parking' ? 'spot' : 'unit'
+
+  const headline =
+    available.length > 0
+      ? `${available.length} ${unitWord}${available.length === 1 ? '' : 's'} available`
+      : comingSoon.length > 0
+        ? `${comingSoon.length} ${unitWord}${comingSoon.length === 1 ? '' : 's'} coming soon`
+        : 'Currently full'
 
   return (
     <div className="min-h-screen">
@@ -72,9 +83,7 @@ export default async function PublicPropertyPage({
           {property.address && <p className="mt-2 text-sm text-ivory/70">{property.address}</p>}
 
           <p className="mt-7 border-y border-brass/45 py-2.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-brass">
-            {available.length > 0
-              ? `${available.length} ${unitWord}${available.length === 1 ? '' : 's'} available`
-              : 'Currently full'}
+            {headline}
           </p>
         </div>
       </header>
@@ -94,11 +103,13 @@ export default async function PublicPropertyPage({
         )}
 
         <section className="space-y-4">
-          <h2 className="font-display text-lg font-normal italic">Available now</h2>
+          <h2 className="font-display text-lg font-normal italic">
+            {property.kind === 'parking' ? 'Spots' : 'Units'}
+          </h2>
 
-          {available.length === 0 ? (
+          {units.length === 0 ? (
             <div className="card px-6 py-10 text-center">
-              <p className="font-display text-lg">Nothing available right now</p>
+              <p className="font-display text-lg">Nothing listed yet</p>
               <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted">
                 Send a request below and {property.contactName} will let you know when something
                 opens up.
@@ -106,38 +117,61 @@ export default async function PublicPropertyPage({
             </div>
           ) : (
             <ul className="space-y-3">
-              {available.map((unit) => (
-                <li key={unit.id} className="card flex items-start gap-5 px-6 py-5">
-                  {unit.image_url && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={unit.image_url}
-                      alt={unit.title}
-                      className="h-20 w-20 shrink-0 rounded-sm border border-line object-cover"
-                    />
-                  )}
-                  <div className="min-w-0">
-                    <p className="font-semibold">{unit.title}</p>
-                    {(unit.price || unit.available_from) && (
-                      <p className="mt-1 font-display text-base italic text-brass-deep tabular-nums">
-                        {[unit.price, unit.available_from && `from ${unit.available_from}`]
-                          .filter(Boolean)
-                          .join(' · ')}
-                      </p>
+              {units.map((unit) => {
+                const taken = unit.status === 'taken'
+                const date = dateLine(unit.status, unit.available_from)
+                return (
+                  <li
+                    key={unit.id}
+                    className={`card flex items-start gap-5 px-6 py-5 ${
+                      taken ? 'opacity-55 grayscale' : ''
+                    }`}
+                  >
+                    {unit.image_url && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={unit.image_url}
+                        alt={unit.title}
+                        className="h-20 w-20 shrink-0 rounded-sm border border-line object-cover"
+                      />
                     )}
-                    {unit.description && (
-                      <p className="mt-2 text-sm leading-relaxed text-muted">{unit.description}</p>
-                    )}
-                  </div>
-                </li>
-              ))}
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <p className={`font-semibold ${taken ? 'text-muted line-through' : ''}`}>
+                          {unit.title}
+                        </p>
+                        <span className={statusPillClass(unit.status)}>
+                          {statusLabel(unit.status)}
+                        </span>
+                      </div>
+                      {(unit.price || date) && (
+                        <p
+                          className={`mt-1 font-display text-base italic tabular-nums ${
+                            taken ? 'text-muted' : 'text-brass-deep'
+                          }`}
+                        >
+                          {[unit.price, date].filter(Boolean).join(' · ')}
+                        </p>
+                      )}
+                      {unit.description && (
+                        <p className="mt-2 text-sm leading-relaxed text-muted">
+                          {unit.description}
+                        </p>
+                      )}
+                    </div>
+                  </li>
+                )
+              })}
             </ul>
           )}
         </section>
 
         <RequestForm
           publicId={publicId}
-          units={available.map((u) => ({ id: u.id, title: u.title }))}
+          units={askable.map((u) => ({
+            id: u.id,
+            title: u.status === 'coming_soon' ? `${u.title} (coming soon)` : u.title,
+          }))}
           contactName={property.contactName}
         />
 

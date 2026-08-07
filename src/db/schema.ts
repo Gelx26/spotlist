@@ -3,7 +3,6 @@ import {
   pgEnum,
   uuid,
   text,
-  boolean,
   integer,
   timestamp,
   index,
@@ -14,6 +13,12 @@ import {
 /** A landlord's rentable unit group: an apartment building or a parking lot. */
 export const propertyKindEnum = pgEnum('property_kind', ['building', 'parking'])
 export const inquiryStatusEnum = pgEnum('inquiry_status', ['new', 'contacted', 'closed'])
+
+/**
+ * Every listing stays on the public board whatever its state — a full board
+ * still tells a visitor what the place is like and is worth asking about.
+ */
+export const listingStatusEnum = pgEnum('listing_status', ['available', 'coming_soon', 'taken'])
 
 // ─── Landlords ─────────────────────────────────────────────────────────────
 
@@ -61,7 +66,9 @@ export const listings = pgTable('listings', {
   image_url: text('image_url'),
   // Free text so landlords can write "$450/mo", "€200 + utilities", etc.
   price: text('price'),
-  available: boolean('available').notNull().default(true),
+  status: listingStatusEnum('status').notNull().default('available'),
+  // Free text so landlords can write "Sept 1" or "early October". Doubles as
+  // the expected date for a coming_soon listing.
   available_from: text('available_from'),
   sort_order: integer('sort_order').notNull().default(0),
   created_at: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

@@ -23,7 +23,8 @@ export default async function LandlordPage({ params }: { params: Promise<{ id: s
       address: properties.address,
       publicId: properties.public_id,
       total: sql<number>`count(${listings.id})`,
-      open: sql<number>`count(${listings.id}) filter (where ${listings.available})`,
+      open: sql<number>`count(${listings.id}) filter (where ${listings.status} = 'available')`,
+      soon: sql<number>`count(${listings.id}) filter (where ${listings.status} = 'coming_soon')`,
     })
     .from(properties)
     .leftJoin(listings, eq(listings.property_id, properties.id))
@@ -70,6 +71,7 @@ export default async function LandlordPage({ params }: { params: Promise<{ id: s
                   </div>
                   <p className="mt-3 text-[11px] font-bold uppercase tracking-wide text-brass-deep">
                     {Number(p.open)} of {Number(p.total)} available
+                    {Number(p.soon) > 0 && ` · ${Number(p.soon)} coming soon`}
                   </p>
                 </Link>
               </li>

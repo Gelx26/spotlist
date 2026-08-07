@@ -9,7 +9,7 @@ import {
   createListing,
   updateListing,
   deleteListing,
-  toggleListingAvailability,
+  setListingStatus,
   updateInquiryStatus,
 } from '@/lib/actions'
 import { getAppUrl, publicListingPath } from '@/lib/appUrl'
@@ -17,6 +17,7 @@ import { qrSvg } from '@/lib/qr'
 import { Disclosure } from '@/components/Disclosure'
 import { EmptyState } from '@/components/EmptyState'
 import { CopyLink } from '@/components/CopyLink'
+import { LISTING_STATUSES, dateLine, statusLabel, statusPillClass } from '@/lib/listingStatus'
 
 export const dynamic = 'force-dynamic'
 
@@ -121,7 +122,10 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
         <h2 className="font-display text-xl font-normal">
           Availability{' '}
           <span className="text-sm font-medium text-muted">
-            ({units.filter((u) => u.available).length} of {units.length} available)
+            ({units.filter((u) => u.status === 'available').length} available
+            {units.filter((u) => u.status === 'coming_soon').length > 0 &&
+              `, ${units.filter((u) => u.status === 'coming_soon').length} coming soon`}
+            {' '}of {units.length})
           </span>
         </h2>
 
@@ -146,18 +150,12 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="font-semibold">{unit.title}</p>
-                      <span
-                        className={
-                          unit.available
-                            ? 'rounded-sm bg-open-soft px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-open'
-                            : 'rounded-sm border border-line bg-ivory px-2.5 py-0.5 text-xs font-semibold text-muted'
-                        }
-                      >
-                        {unit.available ? 'Available' : 'Taken'}
+                      <span className={statusPillClass(unit.status)}>
+                        {statusLabel(unit.status)}
                       </span>
                     </div>
                     <p className="mt-0.5 text-sm text-muted">
-                      {[unit.price, unit.available_from && `from ${unit.available_from}`]
+                      {[unit.price, dateLine(unit.status, unit.available_from)]
                         .filter(Boolean)
                         .join(' · ') || '—'}
                     </p>
@@ -165,11 +163,30 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                       <p className="mt-1 text-sm text-muted">{unit.description}</p>
                     )}
                   </div>
-                  <form action={toggleListingAvailability} className="shrink-0">
+                  <form
+                    key={`status-${unit.updated_at.toISOString()}`}
+                    action={setListingStatus}
+                    className="flex shrink-0 items-center gap-2"
+                  >
                     <input type="hidden" name="id" value={unit.id} />
                     <input type="hidden" name="property_id" value={property.id} />
-                    <button type="submit" className="btn-ghost">
-                      Mark {unit.available ? 'taken' : 'available'}
+                    <label className="sr-only" htmlFor={`status-${unit.id}`}>
+                      Status for {unit.title}
+                    </label>
+                    <select
+                      id={`status-${unit.id}`}
+                      name="status"
+                      defaultValue={unit.status}
+                      className="field w-auto py-1.5"
+                    >
+                      {LISTING_STATUSES.map((s) => (
+                        <option key={s.value} value={s.value}>
+                          {s.label}
+                        </option>
+                      ))}
+                    </select>
+                    <button type="submit" className="btn-ghost py-1.5">
+                      Update
                     </button>
                   </form>
                 </div>
@@ -195,16 +212,30 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                         <input name="title" required className="field" defaultValue={unit.title} />
                       </div>
                       <div>
+                        <label className="label">Status</label>
+                        <select name="status" defaultValue={unit.status} className="field">
+                          {LISTING_STATUSES.map((s) => (
+                            <option key={s.value} value={s.value}>
+                              {s.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
                         <label className="label">Price</label>
                         <input name="price" className="field" defaultValue={unit.price ?? ''} />
                       </div>
-                      <div>
-                        <label className="label">Available from</label>
+                      <div className="sm:col-span-2">
+                        <label className="label">Available from / expected date</label>
                         <input
                           name="available_from"
                           className="field"
+                          placeholder="Sept 1, or early October"
                           defaultValue={unit.available_from ?? ''}
                         />
+                        <p className="mt-1.5 text-xs text-muted">
+                          Shown as “Expected …” on the public page when the status is Coming soon.
+                        </p>
                       </div>
                       <div className="sm:col-span-2">
                         <label className="label">Description</label>
@@ -224,15 +255,6 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                           defaultValue={unit.image_url ?? ''}
                         />
                       </div>
-                      <label className="flex items-center gap-2 text-sm font-medium sm:col-span-2">
-                        <input
-                          type="checkbox"
-                          name="available"
-                          defaultChecked={unit.available}
-                          className="h-4 w-4"
-                        />
-                        Show as available
-                      </label>
                       <div className="sm:col-span-2">
                         <button type="submit" className="btn">
                           Save
@@ -269,16 +291,33 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
               />
             </div>
             <div>
+              <label className="label" htmlFor="u-status">
+                Status
+              </label>
+              <select id="u-status" name="status" defaultValue="available" className="field">
+                {LISTING_STATUSES.map((s) => (
+                  <option key={s.value} value={s.value}>
+                    {s.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
               <label className="label" htmlFor="u-price">
                 Price (optional)
               </label>
               <input id="u-price" name="price" className="field" placeholder="$1,450 / mo" />
             </div>
-            <div>
+            <div className="sm:col-span-2">
               <label className="label" htmlFor="u-from">
-                Available from (optional)
+                Available from / expected date (optional)
               </label>
-              <input id="u-from" name="available_from" className="field" placeholder="Sept 1" />
+              <input
+                id="u-from"
+                name="available_from"
+                className="field"
+                placeholder="Sept 1, or early October"
+              />
             </div>
             <div className="sm:col-span-2">
               <label className="label" htmlFor="u-desc">
@@ -298,10 +337,6 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                 placeholder="images.example.com/photo.jpg"
               />
             </div>
-            <label className="flex items-center gap-2 text-sm font-medium sm:col-span-2">
-              <input type="checkbox" name="available" defaultChecked className="h-4 w-4" />
-              Show as available
-            </label>
             <div className="sm:col-span-2">
               <button type="submit" className="btn">
                 Add {unitWord}

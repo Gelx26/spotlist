@@ -46,6 +46,13 @@ function optionalUrl(fd: FormData, key: string): string | null {
   }
 }
 
+type ListingStatus = 'available' | 'coming_soon' | 'taken'
+
+function listingStatus(fd: FormData): ListingStatus {
+  const raw = text(fd, 'status')
+  return raw === 'coming_soon' || raw === 'taken' ? raw : 'available'
+}
+
 // ─── Landlords ─────────────────────────────────────────────────────────────
 
 export async function createLandlord(fd: FormData) {
@@ -188,7 +195,7 @@ export async function createListing(fd: FormData) {
     image_url: optionalUrl(fd, 'image_url'),
     price: optional(fd, 'price'),
     available_from: optional(fd, 'available_from'),
-    available: fd.get('available') !== null,
+    status: listingStatus(fd),
     sort_order: Number(next) || 0,
   })
 
@@ -208,7 +215,7 @@ export async function updateListing(fd: FormData) {
       image_url: optionalUrl(fd, 'image_url'),
       price: optional(fd, 'price'),
       available_from: optional(fd, 'available_from'),
-      available: fd.get('available') !== null,
+      status: listingStatus(fd),
       updated_at: new Date(),
     })
     .where(eq(listings.id, id))
@@ -216,14 +223,15 @@ export async function updateListing(fd: FormData) {
   await revalidateProperty(propertyId)
 }
 
-export async function toggleListingAvailability(fd: FormData) {
+/** Quick status change from the listing row, without opening the edit panel. */
+export async function setListingStatus(fd: FormData) {
   await requireAdmin()
   const id = required(fd, 'id', 'Listing id')
   const propertyId = required(fd, 'property_id', 'Property')
 
   await db
     .update(listings)
-    .set({ available: sql`not ${listings.available}`, updated_at: new Date() })
+    .set({ status: listingStatus(fd), updated_at: new Date() })
     .where(eq(listings.id, id))
 
   await revalidateProperty(propertyId)
