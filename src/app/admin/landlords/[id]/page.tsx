@@ -111,7 +111,13 @@ export default async function LandlordPage({ params }: { params: Promise<{ id: s
               <label className="label" htmlFor="p-image">
                 Photo URL (optional)
               </label>
-              <input id="p-image" name="image_url" type="url" className="field" placeholder="https://…" />
+              <input
+                id="p-image"
+                name="image_url"
+                inputMode="url"
+                className="field"
+                placeholder="images.example.com/photo.jpg"
+              />
             </div>
             <div className="sm:col-span-2">
               <button type="submit" className="btn">

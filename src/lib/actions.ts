@@ -26,6 +26,25 @@ function required(fd: FormData, key: string, label: string): string {
   return v
 }
 
+/**
+ * Photo URLs are typed/pasted by hand, so a missing scheme is the norm rather
+ * than the exception ("images.example.com/a.jpg"). Assume https:// when none is
+ * given. These inputs are deliberately plain text — an <input type="url"> lets
+ * the browser silently block the whole form, which reads as "save is broken".
+ */
+function optionalUrl(fd: FormData, key: string): string | null {
+  const raw = text(fd, key)
+  if (!raw) return null
+
+  const candidate = /^[a-z][a-z0-9+.-]*:\/\//i.test(raw) ? raw : `https://${raw}`
+  try {
+    const parsed = new URL(candidate)
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? parsed.toString() : null
+  } catch {
+    return null
+  }
+}
+
 // ─── Landlords ─────────────────────────────────────────────────────────────
 
 export async function createLandlord(fd: FormData) {
@@ -83,7 +102,7 @@ export async function createProperty(fd: FormData) {
       name: required(fd, 'name', 'Name'),
       address: optional(fd, 'address'),
       description: optional(fd, 'description'),
-      image_url: optional(fd, 'image_url'),
+      image_url: optionalUrl(fd, 'image_url'),
       public_id: generatePublicId(),
     })
     .returning({ id: properties.id })
@@ -103,7 +122,7 @@ export async function updateProperty(fd: FormData) {
       name: required(fd, 'name', 'Name'),
       address: optional(fd, 'address'),
       description: optional(fd, 'description'),
-      image_url: optional(fd, 'image_url'),
+      image_url: optionalUrl(fd, 'image_url'),
       updated_at: new Date(),
     })
     .where(eq(properties.id, id))
@@ -158,7 +177,7 @@ export async function createListing(fd: FormData) {
     property_id: propertyId,
     title: required(fd, 'title', 'Title'),
     description: optional(fd, 'description'),
-    image_url: optional(fd, 'image_url'),
+    image_url: optionalUrl(fd, 'image_url'),
     price: optional(fd, 'price'),
     available_from: optional(fd, 'available_from'),
     available: fd.get('available') !== null,
@@ -177,7 +196,7 @@ export async function updateListing(fd: FormData) {
     .set({
       title: required(fd, 'title', 'Title'),
       description: optional(fd, 'description'),
-      image_url: optional(fd, 'image_url'),
+      image_url: optionalUrl(fd, 'image_url'),
       price: optional(fd, 'price'),
       available_from: optional(fd, 'available_from'),
       available: fd.get('available') !== null,

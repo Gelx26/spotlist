@@ -174,7 +174,15 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                     Edit
                   </summary>
                   <div className="border-t border-line px-5 py-5">
-                    <form action={updateListing} className="grid gap-4 sm:grid-cols-2">
+                    {/* Keyed on updated_at so the form remounts with fresh
+                        defaults after any change to this listing — otherwise an
+                        open panel keeps stale values (e.g. the availability
+                        checkbox after "Mark taken") and saving reverts them. */}
+                    <form
+                      key={unit.updated_at.toISOString()}
+                      action={updateListing}
+                      className="grid gap-4 sm:grid-cols-2"
+                    >
                       <input type="hidden" name="id" value={unit.id} />
                       <input type="hidden" name="property_id" value={property.id} />
                       <div className="sm:col-span-2">
@@ -206,7 +214,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                         <label className="label">Photo URL</label>
                         <input
                           name="image_url"
-                          type="url"
+                          inputMode="url"
                           className="field"
                           defaultValue={unit.image_url ?? ''}
                         />
@@ -277,7 +285,13 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
               <label className="label" htmlFor="u-image">
                 Photo URL (optional)
               </label>
-              <input id="u-image" name="image_url" type="url" className="field" placeholder="https://…" />
+              <input
+                id="u-image"
+                name="image_url"
+                inputMode="url"
+                className="field"
+                placeholder="images.example.com/photo.jpg"
+              />
             </div>
             <label className="flex items-center gap-2 text-sm font-medium sm:col-span-2">
               <input type="checkbox" name="available" defaultChecked className="h-4 w-4" />
@@ -343,7 +357,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
               <label className="label">Photo URL</label>
               <input
                 name="image_url"
-                type="url"
+                inputMode="url"
                 className="field"
                 defaultValue={property.imageUrl ?? ''}
               />
