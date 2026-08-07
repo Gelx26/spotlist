@@ -8,6 +8,7 @@ import { landlords, properties, listings, inquiries } from '@/db/schema'
 import { generatePublicId } from './ids'
 import { getAppUrl } from './appUrl'
 import { sendInquiryEmail } from './notify'
+import { requireAdmin } from './session'
 
 // ─── Form helpers ──────────────────────────────────────────────────────────
 
@@ -48,6 +49,7 @@ function optionalUrl(fd: FormData, key: string): string | null {
 // ─── Landlords ─────────────────────────────────────────────────────────────
 
 export async function createLandlord(fd: FormData) {
+  await requireAdmin()
   const [row] = await db
     .insert(landlords)
     .values({
@@ -64,6 +66,7 @@ export async function createLandlord(fd: FormData) {
 }
 
 export async function updateLandlord(fd: FormData) {
+  await requireAdmin()
   const id = required(fd, 'id', 'Landlord id')
   await db
     .update(landlords)
@@ -82,6 +85,7 @@ export async function updateLandlord(fd: FormData) {
 }
 
 export async function deleteLandlord(fd: FormData) {
+  await requireAdmin()
   const id = required(fd, 'id', 'Landlord id')
   await db.delete(landlords).where(eq(landlords.id, id))
   revalidatePath('/admin')
@@ -91,6 +95,7 @@ export async function deleteLandlord(fd: FormData) {
 // ─── Properties ────────────────────────────────────────────────────────────
 
 export async function createProperty(fd: FormData) {
+  await requireAdmin()
   const landlordId = required(fd, 'landlord_id', 'Landlord')
   const kind = text(fd, 'kind') === 'parking' ? 'parking' : 'building'
 
@@ -112,6 +117,7 @@ export async function createProperty(fd: FormData) {
 }
 
 export async function updateProperty(fd: FormData) {
+  await requireAdmin()
   const id = required(fd, 'id', 'Property id')
   const kind = text(fd, 'kind') === 'parking' ? 'parking' : 'building'
 
@@ -136,6 +142,7 @@ export async function updateProperty(fd: FormData) {
 }
 
 export async function deleteProperty(fd: FormData) {
+  await requireAdmin()
   const id = required(fd, 'id', 'Property id')
   const [row] = await db
     .delete(properties)
@@ -165,6 +172,7 @@ async function revalidateProperty(propertyId: string) {
 }
 
 export async function createListing(fd: FormData) {
+  await requireAdmin()
   const propertyId = required(fd, 'property_id', 'Property')
 
   // Append to the end of the current order rather than jumping to the top.
@@ -188,6 +196,7 @@ export async function createListing(fd: FormData) {
 }
 
 export async function updateListing(fd: FormData) {
+  await requireAdmin()
   const id = required(fd, 'id', 'Listing id')
   const propertyId = required(fd, 'property_id', 'Property')
 
@@ -208,6 +217,7 @@ export async function updateListing(fd: FormData) {
 }
 
 export async function toggleListingAvailability(fd: FormData) {
+  await requireAdmin()
   const id = required(fd, 'id', 'Listing id')
   const propertyId = required(fd, 'property_id', 'Property')
 
@@ -220,6 +230,7 @@ export async function toggleListingAvailability(fd: FormData) {
 }
 
 export async function deleteListing(fd: FormData) {
+  await requireAdmin()
   const id = required(fd, 'id', 'Listing id')
   const propertyId = required(fd, 'property_id', 'Property')
 
@@ -313,6 +324,7 @@ export async function submitInquiry(
 }
 
 export async function updateInquiryStatus(fd: FormData) {
+  await requireAdmin()
   const id = required(fd, 'id', 'Inquiry id')
   const raw = text(fd, 'status')
   const status = raw === 'contacted' || raw === 'closed' ? raw : 'new'

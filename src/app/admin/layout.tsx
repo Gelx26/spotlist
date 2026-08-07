@@ -1,6 +1,14 @@
 import Link from 'next/link'
+import { logout } from '@/lib/authActions'
+import { requireAdmin } from '@/lib/session'
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  await requireAdmin()
+
+  return adminShell(children)
+}
+
+function adminShell(children: React.ReactNode) {
   return (
     <div className="min-h-screen">
       <header className="border-b border-line bg-card print:hidden">
@@ -24,6 +32,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             >
               Requests
             </Link>
+            <form action={logout} className="ml-2 border-l border-line pl-2">
+              <button
+                type="submit"
+                className="rounded-sm px-3 py-1.5 text-muted transition-colors hover:bg-ivory hover:text-ink"
+              >
+                Sign out
+              </button>
+            </form>
           </nav>
         </div>
       </header>
