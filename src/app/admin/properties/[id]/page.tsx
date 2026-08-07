@@ -17,6 +17,7 @@ import { qrSvg } from '@/lib/qr'
 import { Disclosure } from '@/components/Disclosure'
 import { EmptyState } from '@/components/EmptyState'
 import { CopyLink } from '@/components/CopyLink'
+import { ImageUpload } from '@/components/ImageUpload'
 import { LISTING_STATUSES, dateLine, statusLabel, statusPillClass } from '@/lib/listingStatus'
 
 export const dynamic = 'force-dynamic'
@@ -247,13 +248,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                         />
                       </div>
                       <div className="sm:col-span-2">
-                        <label className="label">Photo URL</label>
-                        <input
-                          name="image_url"
-                          inputMode="url"
-                          className="field"
-                          defaultValue={unit.image_url ?? ''}
-                        />
+                        <ImageUpload name="image_url" defaultValue={unit.image_url} />
                       </div>
                       <div className="sm:col-span-2">
                         <button type="submit" className="btn">
@@ -326,16 +321,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
               <textarea id="u-desc" name="description" rows={2} className="field" />
             </div>
             <div className="sm:col-span-2">
-              <label className="label" htmlFor="u-image">
-                Photo URL (optional)
-              </label>
-              <input
-                id="u-image"
-                name="image_url"
-                inputMode="url"
-                className="field"
-                placeholder="images.example.com/photo.jpg"
-              />
+              <ImageUpload name="image_url" label="Photo (optional)" />
             </div>
             <div className="sm:col-span-2">
               <button type="submit" className="btn">
@@ -394,13 +380,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
               />
             </div>
             <div className="sm:col-span-2">
-              <label className="label">Photo URL</label>
-              <input
-                name="image_url"
-                inputMode="url"
-                className="field"
-                defaultValue={property.imageUrl ?? ''}
-              />
+              <ImageUpload name="image_url" defaultValue={property.imageUrl} />
             </div>
             <div className="sm:col-span-2">
               <button type="submit" className="btn">

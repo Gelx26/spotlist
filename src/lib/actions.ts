@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { eq, sql } from 'drizzle-orm'
 import { db } from '@/db'
 import { landlords, properties, listings, inquiries } from '@/db/schema'
+import { del } from '@vercel/blob'
 import { generatePublicId } from './ids'
 import { getAppUrl } from './appUrl'
 import { sendInquiryEmail } from './notify'
@@ -51,6 +52,33 @@ type ListingStatus = 'available' | 'coming_soon' | 'taken'
 function listingStatus(fd: FormData): ListingStatus {
   const raw = text(fd, 'status')
   return raw === 'coming_soon' || raw === 'taken' ? raw : 'available'
+}
+
+
+/**
+ * Removes a photo from blob storage once nothing points at it any more.
+ *
+ * Only touches our own blob host — early listings used pasted external URLs and
+ * those must never be "deleted". Failures are swallowed: an orphaned blob is a
+ * far better outcome than a save that appears to fail.
+ */
+async function discardPhoto(url: string | null | undefined) {
+  if (!url) return
+  try {
+    if (!new URL(url).hostname.endsWith('.public.blob.vercel-storage.com')) return
+    await del(url)
+  } catch (err) {
+    console.error('[blob] could not delete', url, err)
+  }
+}
+
+async function listingPhoto(id: string) {
+  const [row] = await db
+    .select({ url: listings.image_url })
+    .from(listings)
+    .where(eq(listings.id, id))
+    .limit(1)
+  return row?.url ?? null
 }
 
 // ─── Landlords ─────────────────────────────────────────────────────────────
@@ -128,6 +156,13 @@ export async function updateProperty(fd: FormData) {
   const id = required(fd, 'id', 'Property id')
   const kind = text(fd, 'kind') === 'parking' ? 'parking' : 'building'
 
+  const [before] = await db
+    .select({ url: properties.image_url })
+    .from(properties)
+    .where(eq(properties.id, id))
+    .limit(1)
+  const nextImage = optionalUrl(fd, 'image_url')
+
   const [row] = await db
     .update(properties)
     .set({
@@ -135,11 +170,13 @@ export async function updateProperty(fd: FormData) {
       name: required(fd, 'name', 'Name'),
       address: optional(fd, 'address'),
       description: optional(fd, 'description'),
-      image_url: optionalUrl(fd, 'image_url'),
+      image_url: nextImage,
       updated_at: new Date(),
     })
     .where(eq(properties.id, id))
     .returning({ publicId: properties.public_id, landlordId: properties.landlord_id })
+
+  if (before?.url && before.url !== nextImage) await discardPhoto(before.url)
 
   revalidatePath(`/admin/properties/${id}`)
   if (row) {
@@ -207,12 +244,15 @@ export async function updateListing(fd: FormData) {
   const id = required(fd, 'id', 'Listing id')
   const propertyId = required(fd, 'property_id', 'Property')
 
+  const previousPhoto = await listingPhoto(id)
+  const nextImage = optionalUrl(fd, 'image_url')
+
   await db
     .update(listings)
     .set({
       title: required(fd, 'title', 'Title'),
       description: optional(fd, 'description'),
-      image_url: optionalUrl(fd, 'image_url'),
+      image_url: nextImage,
       price: optional(fd, 'price'),
       available_from: optional(fd, 'available_from'),
       status: listingStatus(fd),
@@ -220,6 +260,7 @@ export async function updateListing(fd: FormData) {
     })
     .where(eq(listings.id, id))
 
+  if (previousPhoto && previousPhoto !== nextImage) await discardPhoto(previousPhoto)
   await revalidateProperty(propertyId)
 }
 
@@ -242,7 +283,9 @@ export async function deleteListing(fd: FormData) {
   const id = required(fd, 'id', 'Listing id')
   const propertyId = required(fd, 'property_id', 'Property')
 
+  const photo = await listingPhoto(id)
   await db.delete(listings).where(eq(listings.id, id))
+  await discardPhoto(photo)
   await revalidateProperty(propertyId)
 }
 

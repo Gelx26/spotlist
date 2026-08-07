@@ -6,6 +6,7 @@ import { landlords, properties, listings } from '@/db/schema'
 import { updateLandlord, deleteLandlord, createProperty } from '@/lib/actions'
 import { Disclosure } from '@/components/Disclosure'
 import { EmptyState } from '@/components/EmptyState'
+import { ImageUpload } from '@/components/ImageUpload'
 
 export const dynamic = 'force-dynamic'
 
@@ -110,16 +111,7 @@ export default async function LandlordPage({ params }: { params: Promise<{ id: s
               <textarea id="p-description" name="description" rows={2} className="field" />
             </div>
             <div className="sm:col-span-2">
-              <label className="label" htmlFor="p-image">
-                Photo URL (optional)
-              </label>
-              <input
-                id="p-image"
-                name="image_url"
-                inputMode="url"
-                className="field"
-                placeholder="images.example.com/photo.jpg"
-              />
+              <ImageUpload name="image_url" label="Photo (optional)" />
             </div>
             <div className="sm:col-span-2">
               <button type="submit" className="btn">
