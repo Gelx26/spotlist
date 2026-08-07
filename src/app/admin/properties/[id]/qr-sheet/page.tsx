@@ -22,8 +22,6 @@ export default async function QrSheetPage({ params }: { params: Promise<{ id: st
       address: properties.address,
       publicId: properties.public_id,
       landlordName: landlords.name,
-      contactName: landlords.contact_name,
-      contactPhone: landlords.contact_phone,
     })
     .from(properties)
     .innerJoin(landlords, eq(landlords.id, properties.landlord_id))
@@ -75,13 +73,6 @@ export default async function QrSheetPage({ params }: { params: Promise<{ id: st
           </p>
           <p className="mt-1 font-display text-base break-all">{typedUrl}</p>
 
-          <div className="mx-auto mt-9 max-w-xs border-t border-line pt-5">
-            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Enquiries</p>
-            <p className="mt-1.5 text-sm font-semibold">{property.contactName}</p>
-            {property.contactPhone && (
-              <p className="text-sm text-muted tabular-nums">{property.contactPhone}</p>
-            )}
-          </div>
         </div>
       </div>
 
